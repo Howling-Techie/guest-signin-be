@@ -25,8 +25,8 @@ const insertGuest = async (body) => {
     return data[0];
 };
 
-const selectGuest = async (query) => {
-    const {guestId} = query;
+const selectGuest = async (params) => {
+    const {guestId} = params;
     if (!guestId)
         return Promise.reject("Missing guest ID");
 
@@ -39,37 +39,8 @@ const selectGuest = async (query) => {
     return data;
 };
 
-const insertGuestSession = async (params, body) => {
-    const {guestId} = params;
-    const {guest, checkInTime, reason} = body;
-    const data = await db.query(`INSERT INTO sessions (guestId, checkIn, reason)
-                                 VALUES (?, ?, ?)
-                                 RETURNING *`, [guest, checkInTime, reason]);
-    return data;
-};
-
-const updateGuestSession = (params, body) => {
-    const {guestId} = params;
-
-    if (!guestId)
-        return Promise.reject("Missing guest ID");
-    if (!(Object.hasOwn(body, "checkOutTime") && Object.hasOwn(body, "satisfied") && Object.hasOwn(body, "feedback"))) {
-        return Promise.reject("Missing properties");
-    }
-
-    const {checkOutTime, satisfied, feedback} = body;
-    const data = db.query(`UPDATE sessions
-                           SET checkOut  = ?,
-                               satisfied = ?,
-                               feedback  = ?
-                           WHERE guestId = ?`, [checkOutTime, satisfied, feedback, guestId]);
-    return data;
-};
-
 module.exports = {
     selectGuests,
     selectGuest,
-    insertGuest,
-    insertGuestSession,
-    updateGuestSession
+    insertGuest
 };
