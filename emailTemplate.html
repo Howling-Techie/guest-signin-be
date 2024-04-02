@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Report - March 2024</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            background-color: #4e5d94;
+            color: whitesmoke;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4e5d94;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .guest-info {
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 5px 20px;
+            width: fit-content;
+        }
+
+        .cal tr {
+            height: 80px;
+            vertical-align: top;
+        }
+
+        .cal td:nth-last-child(1) {
+            background-color: darkgray;
+        }
+
+        .cal td:nth-last-child(2) {
+            background-color: darkgray;
+        }
+
+        strong {
+            color: #4e5d94;
+        }
+
+        .present {
+            background-color: #b0e0e6; /* Light blue */
+            width: fit-content;
+        }
+
+        .visit-info {
+            background-color: #f0f0f0; /* Light grey */
+            border-radius: 5px;
+            padding: 5px;
+            font-size: 12px;
+            line-height: 1.2;
+            white-space: nowrap;
+            z-index: 1;
+            width: fit-content;
+            align-content: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Monthly Report - March 2024</h1>
+    <p>Hi! Here is the monthly report for John Doe.</p>
+    <div class="guest-info">
+        <h3>Guest Info</h3>
+        <h4>John Doe</h4>
+        <p><strong>From:</strong> Warrington Collegiate</p>
+        <p><strong>Email:</strong> fakeemail@123.xyz</p>
+    </div>
+    <h2>Info</h2>
+    <h2>Calendar for March 2024</h2>
+    <table class="cal" style="table-layout: fixed">
+        <thead>
+        <tr style="height: fit-content">
+            <th>Mon</th>
+            <th>Tue</th>
+            <th>Wed</th>
+            <th>Thu</th>
+            <th>Fri</th>
+            <th>Sat</th>
+            <th>Sun</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Dummy data for the calendar -->
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="present">1
+                <div class="visit-info">09:00 AM<br>05:00 PM</div>
+            </td>
+            <td>2</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td class="present">4
+                <div class="visit-info">10:00 AM<br>04:00 PM</div>
+            </td>
+            <td>5</td>
+            <td>6</td>
+            <td>7</td>
+            <td>8</td>
+            <td>9</td>
+            <td>10</td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td>12</td>
+            <td>13</td>
+            <td>14</td>
+            <td>15</td>
+            <td>16</td>
+            <td>17</td>
+        </tr>
+        <tr>
+            <td>18</td>
+            <td>19</td>
+            <td>20</td>
+            <td>21</td>
+            <td>22</td>
+            <td>23</td>
+            <td>24</td>
+        </tr>
+        <tr>
+            <td>25</td>
+            <td>26</td>
+            <td>27</td>
+            <td>28</td>
+            <td>29</td>
+            <td>30</td>
+            <td>31</td>
+        </tr>
+        <!-- Add more rows as needed -->
+        </tbody>
+    </table>
+
+    <h2>Visits Breakdown</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Reason</th>
+            <th>Feedback</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>March 1st, 2024</td>
+            <td>09:00 AM</td>
+            <td>05:00 PM</td>
+            <td>Meeting</td>
+            <td>Good</td>
+        </tr>
+        <tr>
+            <td>March 2nd, 2024</td>
+            <td>10:00 AM</td>
+            <td>04:00 PM</td>
+            <td>Training</td>
+            <td>Excellent</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
