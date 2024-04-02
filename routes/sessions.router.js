@@ -10,21 +10,22 @@ const sessionsRouter = Router();
 
 sessionsRouter
     .route("/today")
-    .get(getDailySessions)
+    .get(getDailySessions);
+
 sessionsRouter
     .route("/week")
-    .get(getWeeklySessions)
+    .get(getWeeklySessions);
 
 sessionsRouter
     .route("/active")
-    .get(getActiveSessions)
+    .get(getActiveSessions);
 
 sessionsRouter
     .route("/signin/")
-    .post(postSessionStart)
+    .post(postSessionStart);
 
 sessionsRouter
     .route("/signout/:sessionId")
-    .post(postSessionEnd)
+    .post(postSessionEnd);
 
 module.exports = sessionsRouter;

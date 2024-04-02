@@ -14,7 +14,7 @@ const selectActiveSessions = async () => {
                                      WHERE id = ?`, [datum.guestId]);
     }
     return data;
-}
+};
 const selectDailySessions = async () => {
     const today = new Date();
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -48,10 +48,9 @@ const selectWeeklySessions = async () => {
 };
 const insertSessionStart = async (body) => {
     const {guest, checkInTime, reason} = body;
-    const data = await db.query(`INSERT INTO sessions (guestId, checkIn, reason)
-                                 VALUES (?, ?, ?)
-                                 RETURNING *`, [guest, checkInTime, reason]);
-    return data;
+    return await db.query(`INSERT INTO sessions (guestId, checkIn, reason)
+                           VALUES (?, ?, ?)
+                           RETURNING *`, [guest, checkInTime, reason]);
 };
 const updateSessionEnd = async (params, body) => {
     if (!Object.hasOwn(params, "sessionId")) {
@@ -66,7 +65,7 @@ const updateSessionEnd = async (params, body) => {
                                  WHERE id = ?
                                  RETURNING *`, [(new Date()).toISOString(), satisfied, feedback, sessionId]);
     return data[0];
-}
+};
 
 module.exports = {
     insertSessionStart,
