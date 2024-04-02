@@ -9,9 +9,9 @@ const selectActiveSessions = async () => {
                                    AND checkOut is NULL`, [startOfDay.toISOString()]);
 
     for (const datum of data) {
-        datum.user = await db.query(`SELECT id, name, source
-                                     FROM guests
-                                     WHERE id = ?`, [datum.guestId]);
+        datum.guest = (await db.query(`SELECT id, name, source
+                                       FROM guests
+                                       WHERE id = ?`, [datum.guestId]))[0];
     }
     return data;
 };
@@ -24,9 +24,9 @@ const selectDailySessions = async () => {
                                  WHERE checkIn >= ?
                                    AND checkIn < ?`, [startOfDay.toISOString(), endOfDay.toISOString()]);
     for (const datum of data) {
-        datum.user = await db.query(`SELECT id, name, source
-                                     FROM guests
-                                     WHERE id = ?`, [datum.guestId]);
+        datum.guest = (await db.query(`SELECT id, name, source
+                                       FROM guests
+                                       WHERE id = ?`, [datum.guestId]))[0];
     }
     return data;
 };
@@ -40,9 +40,9 @@ const selectWeeklySessions = async () => {
                                  WHERE checkIn >= ?
                                    AND checkIn < ?`, [startOfWeek.toISOString(), endOfWeek.toISOString()]);
     for (const datum of data) {
-        datum.user = await db.query(`SELECT id, name, source
-                                     FROM guests
-                                     WHERE id = ?`, [datum.id]);
+        datum.guest = (await db.query(`SELECT id, name, source
+                                       FROM guests
+                                       WHERE id = ?`, [datum.id]))[0];
     }
     return data;
 };
