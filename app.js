@@ -3,10 +3,19 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+const cron = require("node-cron");
+require("dotenv").config();
 
 const indexRouter = require("./routes/index");
 const apiRouter = require("./routes/api.router");
 const cors = require("cors");
+const {selectDailySessions, selectWeeklySessions, selectMonthlySessions} = require("./models/sessions.model");
+const {
+    generateDailyUserReport,
+    generateDailyReport,
+    generateWeeklyUserReport,
+    generateWeeklyReport, generateMonthlyUserReport
+} = require("./reporting");
 const app = express();
 
 app.use(cors());
@@ -38,6 +47,53 @@ app.use(function (err, req, res, next) {
     // render the error page
     res.status(err.status || 500);
     res.render("error");
+});
+
+// Function for generating reports
+async function generateDailyReports() {
+    const sessions = await selectDailySessions();
+    const guestIds = [...new Set(sessions.map(session => session.guest.id))];
+    const guests = guestIds.map(id => sessions.find(s => s.guest.id === id).guest);
+    for (const guest of guests) {
+        generateDailyUserReport(guest, sessions.filter(s => s.guest.id === guest.id));
+    }
+    generateDailyReport(sessions);
+}
+
+async function generateWeeklyReports() {
+    const sessions = await selectWeeklySessions();
+    const guestIds = [...new Set(sessions.map(session => session.guest.id))];
+    const guests = guestIds.map(id => sessions.find(s => s.guest.id === id).guest);
+    for (const guest of guests) {
+        generateWeeklyUserReport(guest, sessions.filter(s => s.guest.id === guest.id));
+    }
+    generateWeeklyReport(sessions);
+}
+
+async function generateMonthlyReports() {
+    const sessions = await selectMonthlySessions();
+    console.log(sessions);
+    const guestIds = [...new Set(sessions.map(session => session.guest.id))];
+    const guests = guestIds.map(id => sessions.find(s => s.guest.id === id).guest);
+    for (const guest of guests) {
+        generateMonthlyUserReport(guest, sessions.filter(s => s.guest.id === guest.id));
+    }
+}
+
+// Schedule tasks to be run on the server.
+// For generating daily reports at 5PM
+cron.schedule("* 17 * * *", function () {
+    generateDailyReports();
+});
+
+// For generating weekly reports at 5PM every Friday
+cron.schedule("* 17 * * 5", function () {
+    generateWeeklyReports();
+});
+
+// For generating monthly reports at 5PM on the last day of the month
+cron.schedule("* 17 L * *", function () {
+    generateMonthlyReports();
 });
 
 module.exports = app;
