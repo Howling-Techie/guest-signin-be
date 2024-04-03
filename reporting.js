@@ -1,43 +1,81 @@
 const db = require("./database/connection");
 const nodemailer = require("nodemailer");
-const {isSameDay, format, eachDayOfInterval, addDays} = require('date-fns');
+const {isSameDay, format, eachDayOfInterval, addDays, previousMonday, startOfMonth} = require("date-fns");
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
+    host: process.env.MAIL_HOST,
+    port: process.env.MAIL_PORT,
     auth: {
-        user: 'stanley.daniel@ethereal.email',
-        pass: '2c7XYYdxVuj8cPGeZw'
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
     }
 });
 
-const generateDailyReport = () => {
-    const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const timestamp = startOfDay / 1000;
-    const sessions = db.query(`SELECT *
-                               FROM sessions
-                               WHERE checkIn >= ?`, [timestamp]);
-
+const generateDailyUserReport = (guest, sessions) => {
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>` + styleHtml + `<title>Daily Report - ${format(new Date(), "dd MMMM yyyy")}</title></head>
 <body>
 <div class="container">
-    <h1>Monthly Report - ${format(new Date(), "MMMM yyyy")}</h1>
-    <p>Hi! Here is the monthly report for ${guest.name}.</p>
+    <h1>Daily Report - ${format(new Date(), "dd MMMM yyyy")}</h1>
+    <p>Hi! Here is the daily report for ${guest.name}.</p>
     <div class="guest-info">
         <h3>Guest Info</h3>
         <h4>${guest.name}</h4>
         <p><strong>From:</strong> ${guest.source}</p>
         <p><strong>Email:</strong> ${guest.email}</p>
     </div>
-` + generateCalendar(new Date(), sessions) + generateMonthlyTable(sessions) + "</div></body></html>";
+` + generateDailyTable(sessions) + "</div></body></html>";
 
-    sendEmailReport(`Monthly report for ${guest.name} - ${format(new Date(), "MMMM yyyy")}`, html, "fakeemail@domain.com");
+    sendEmailReport(`Daily report for ${guest.name} - ${format(new Date(), "dd MMMM yyyy")}`, html, "fakeemail@domain.com");
 };
 
-const generateMonthlyReport = (guest, sessions) => {
+const generateDailyReport = (sessions) => {
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>` + styleHtml + `<title>Daily Report - ${format(new Date(), "dd MMMM yyyy")}</title></head>
+<body>
+<div class="container">
+    <h1>Daily Report - ${format(new Date(), "dd MMMM yyyy")}</h1>
+    <p>Hi! Here is the daily report.</p>
+` + generateDailyTable(sessions) + "</div></body></html>";
+
+    sendEmailReport(`Daily report for ${format(new Date(), "dd MMMM yyyy")}`, html, "fakeemail@domain.com");
+};
+const generateWeeklyUserReport = (guest, sessions) => {
+    const startOfWeek = previousMonday(new Date());
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>` + styleHtml + `<title>Weekly Report - ${format(startOfWeek, "dd MMMM yyyy")}</title></head>
+<body>
+<div class="container">
+    <h1>Weekly Report - ${format(new Date(), "MMMM yyyy")}</h1>
+    <p>Hi! Here is the weekly report for ${guest.name}.</p>
+    <div class="guest-info">
+        <h3>Guest Info</h3>
+        <h4>${guest.name}</h4>
+        <p><strong>From:</strong> ${guest.source}</p>
+        <p><strong>Email:</strong> ${guest.email}</p>
+    </div>
+` + generateWeeklyTable(startOfWeek, sessions) + "</div></body></html>";
+
+    sendEmailReport(`Monthly report for ${guest.name} - ${format(startOfWeek, "MMMM yyyy")}`, html, "fakeemail@domain.com");
+};
+const generateWeeklyReport = (sessions) => {
+    const startOfWeek = previousMonday(new Date());
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>` + styleHtml + `<title>Weekly Report - ${format(startOfWeek, "dd MMMM yyyy")}</title></head>
+<body>
+<div class="container">
+    <h1>Weekly Report - ${format(new Date(), "MMMM yyyy")}</h1>
+    <p>Hi! Here is the weekly report.</p>
+` + generateWeeklyTable(startOfWeek, sessions) + "</div></body></html>";
+
+    sendEmailReport(`Monthly report for ${format(startOfWeek, "MMMM yyyy")}`, html, "fakeemail@domain.com");
+};
+
+const generateMonthlyUserReport = (guest, sessions) => {
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>` + styleHtml + `<title>Monthly Report - ${format(new Date(), "MMMM yyyy")}</title></head>
@@ -51,14 +89,14 @@ const generateMonthlyReport = (guest, sessions) => {
         <p><strong>From:</strong> ${guest.source}</p>
         <p><strong>Email:</strong> ${guest.email}</p>
     </div>
-` + generateCalendar(new Date(), sessions) + generateMonthlyTable(sessions) + "</div></body></html>";
+` + generateCalendar(startOfMonth(new Date()), sessions) + generateMonthlyTable(sessions) + "</div></body></html>";
 
     sendEmailReport(`Monthly report for ${guest.name} - ${format(new Date(), "MMMM yyyy")}`, html, "fakeemail@domain.com");
 };
 
 const sendEmailReport = (subject, content, recipient) => {
     transporter.sendMail({
-        from: 'stanley.daniel@ethereal.email',
+        from: "stanley.daniel@ethereal.email",
         to: recipient,
         subject: subject,
         html: content
@@ -92,7 +130,8 @@ const generateCalendar = (date, sessions) => {
     let firstRowHtml = Array(blankCellCount).fill("<td></td>").join("");
     for (let i = 1; i <= 7 - blankCellCount; i++) {
         const todaysEvents = sessions.filter(s => isSameDay(new Date(s.checkIn), new Date(startOfMonth.getFullYear(), startOfMonth.getMonth(), i)));
-        firstRowHtml += `<td ${todaysEvents.length > 0 ? "class=\"present\"" : ""}>` + i + todaysEvents.map(e => `<div class="visit-info">${format(new Date(e.checkIn), "hh:mm aa")}<br>${format(new Date(e.checkOut), "hh:mm aa")}</div>`) + "</td>";
+        const todaysEventsHtml = todaysEvents.map(e => `<div class="visit-info">${format(new Date(e.checkIn), "hh:mm aa")}<br>${format(new Date(e.checkOut), "hh:mm aa")}</div>`).join("");
+        firstRowHtml += `<td ${todaysEvents.length > 0 ? "class=\"present\"" : ""}>` + i + todaysEventsHtml + "</td>";
     }
     firstRowHtml += "</tr>";
 
@@ -105,7 +144,8 @@ const generateCalendar = (date, sessions) => {
         if ((new Date(startOfMonth.getFullYear(), startOfMonth.getMonth(), i)).getDay() === 0) {
             remainingRowsHtml += "<tr>";
         }
-        remainingRowsHtml += `<td ${todaysEvents.length > 0 ? "class=\"present\"" : ""}>` + i + todaysEvents.map(e => `<div class="visit-info">${format(new Date(e.checkIn), "hh:mm aa")}<br>${format(new Date(e.checkOut), "hh:mm aa")}</div>`) + "</td>";
+        const todaysEventsHtml = todaysEvents.map(e => `<div class="visit-info">${format(new Date(e.checkIn), "hh:mm aa")}<br>${format(new Date(e.checkOut), "hh:mm aa")}</div>`).join("");
+        remainingRowsHtml += `<td ${todaysEvents.length > 0 ? "class=\"present\"" : ""}>` + i + todaysEventsHtml + "</td>";
         if ((new Date(startOfMonth.getFullYear(), startOfMonth.getMonth(), i)).getDay() === 6) {
             remainingRowsHtml += "</tr>";
         }
@@ -120,7 +160,7 @@ const generateCalendar = (date, sessions) => {
 
 const generateMonthlyTable = (sessions) => {
     const generateTableRows = (sessions) => {
-        let rows = '';
+        let rows = "";
         sessions.forEach(session => {
             rows += `
             <tr>
@@ -156,7 +196,7 @@ const generateMonthlyTable = (sessions) => {
 
 const generateDailyTable = (sessions) => {
     const generateTableRows = (sessions) => {
-        let rows = '';
+        let rows = "";
         sessions.forEach(session => {
             rows += `
             <tr>
@@ -278,6 +318,7 @@ const styleHtml = `    <style>
 
         .visit-info {
             background-color: #f0f0f0; /* Light grey */
+            margin-top: 5px;
             border-radius: 5px;
             padding: 5px;
             font-size: 12px;
@@ -288,3 +329,11 @@ const styleHtml = `    <style>
             align-content: center;
         }
     </style>`;
+
+module.exports = {
+    generateDailyUserReport,
+    generateDailyReport,
+    generateWeeklyUserReport,
+    generateWeeklyReport,
+    generateMonthlyUserReport
+};
