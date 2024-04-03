@@ -9,7 +9,7 @@ const selectActiveSessions = async () => {
                                    AND checkOut is NULL`, [startOfDay.toISOString()]);
 
     for (const datum of data) {
-        datum.guest = (await db.query(`SELECT id, name, source
+        datum.guest = (await db.query(`SELECT *
                                        FROM guests
                                        WHERE id = ?`, [datum.guestId]))[0];
     }
@@ -24,7 +24,7 @@ const selectDailySessions = async () => {
                                  WHERE checkIn >= ?
                                    AND checkIn < ?`, [startOfDay.toISOString(), endOfDay.toISOString()]);
     for (const datum of data) {
-        datum.guest = (await db.query(`SELECT id, name, source
+        datum.guest = (await db.query(`SELECT *
                                        FROM guests
                                        WHERE id = ?`, [datum.guestId]))[0];
     }
@@ -40,12 +40,29 @@ const selectWeeklySessions = async () => {
                                  WHERE checkIn >= ?
                                    AND checkIn < ?`, [startOfWeek.toISOString(), endOfWeek.toISOString()]);
     for (const datum of data) {
-        datum.guest = (await db.query(`SELECT id, name, source
+        datum.guest = (await db.query(`SELECT *
                                        FROM guests
-                                       WHERE id = ?`, [datum.id]))[0];
+                                       WHERE id = ?`, [datum.guestId]))[0];
     }
     return data;
 };
+
+const selectMonthlySessions = async () => {
+    const today = new Date();
+    const startOfWeek = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfWeek = new Date(today.getFullYear(), today.getMonth() + 1, -1);
+    const data = await db.query(`SELECT *
+                                 FROM sessions
+                                 WHERE checkIn >= ?
+                                   AND checkIn < ?`, [startOfWeek.toISOString(), endOfWeek.toISOString()]);
+    for (const datum of data) {
+        datum.guest = (await db.query(`SELECT *
+                                       FROM guests
+                                       WHERE id = ?`, [datum.guestId]))[0];
+    }
+    return data;
+};
+
 const insertSessionStart = async (body) => {
     const {guest, checkInTime, reason} = body;
     return await db.query(`INSERT INTO sessions (guestId, checkIn, reason)
@@ -63,13 +80,15 @@ const updateSessionEnd = async (params, body) => {
                                      satisfied = ?,
                                      feedback  = ?
                                  WHERE id = ?
-                                 RETURNING *`, [(new Date()).toISOString(), satisfied, feedback, sessionId]);
+                                 RETURNING *`, [(new Date()).toISOString(), satisfied ? 1 : 0, feedback, sessionId]);
+
     return data[0];
 };
 
 module.exports = {
     insertSessionStart,
     updateSessionEnd,
+    selectMonthlySessions,
     selectWeeklySessions,
     selectDailySessions,
     selectActiveSessions

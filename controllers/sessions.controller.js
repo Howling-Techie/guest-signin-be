@@ -34,7 +34,7 @@ const getWeeklySessions = (req, res, next) => {
 };
 
 const postSessionEnd = (req, res, next) => {
-    updateSessionEnd(req.body)
+    updateSessionEnd(req.params, req.body)
         .then((session) => {
             res.status(201).send({session});
         })
